@@ -14,7 +14,7 @@ class SpreadSheet(QMainWindow):
         super().__init__()
         
         # Connexion a la db
-        self.conn = sql.connect("config\\Tasks.db")
+        self.conn = sql.connect("Tasks.db")
         self.c = self.conn.cursor()
         self.conn.commit()
 
@@ -24,7 +24,7 @@ class SpreadSheet(QMainWindow):
         # Parametres de la fenetre
         self.setWindowTitle("Voir les projets")
         self.setGeometry(200, 150, 800, 630)
-        self.setWindowIcon(QIcon("config\\task4.png"))
+        self.setWindowIcon(QIcon("task4.png"))
 
         # Créer le tableur
         self.Tableur = QTableWidget(self)
@@ -95,6 +95,8 @@ class SpreadSheet(QMainWindow):
 
         self.Tableur.setColumnWidth(0, 800)
 
+        self.Tableur.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
+
         self.Tableur.cellClicked.connect(self.CurrentCell)
 
     def init_Labels_Buttons(self):
@@ -119,44 +121,15 @@ class SpreadSheet(QMainWindow):
         # Delete Element
         self.Delete_button.setGeometry(350, 596, 120, 30)
         self.Delete_button.setFont(QFont("Tw Cen MT"))
-        self.Delete_button.setStyleSheet("""
-                                        QPushButton {
-                                            background-color: (0,0,0); 
-                                            border: None;
-                                            font-size: 25px;
-                                            color: #688C7B;
-                                            border-radius: 5px;
 
-                                        }
-                                        QPushButton:hover {
-                                            color: #1e1e1e;
-                                            background-color: #e3004f;
-                                        }
-                                    """)
-        self.Delete_button.clicked.connect(self.DeleteCell)
-
-    def DeleteCell(self):
-        if self.Tableur.currentItem():
-            self.name = self.Tableur.currentItem().text()
-            self.c.execute("DELETE FROM Tasks WHERE name = ?", (self.name,))     
-            self.conn.commit()
-            self.Tableur.removeRow(self.Tableur.currentRow())
-            self.Title_Description.setText("Description : ... ")
-            self.Important_Label.setText("| Importance : ...")
-            self.Description_Label.setText("...")
-
+        
     def CurrentCell(self):
         self.name = self.Tableur.currentItem().text()
-        
         self.c.execute("SELECT important FROM Tasks WHERE name = ?", (self.name,))
         Important_level = self.c.fetchone()
         self.c.execute("SELECT description FROM Tasks WHERE name = ?", (self.name,))
         description = self.c.fetchone()
-            
-        # print(Important_level, description)
-        if Important_level == None or description == None:
-            Important_level = ('0',)
-            description = ("Unkown element",)
+
 
         self.Title_Description.setText(f"Description : {self.name}")
         self.Important_Label.setText(f"| Importance : {Important_level[0]}/100")
